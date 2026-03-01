@@ -191,10 +191,24 @@ tasks.register('buildNative', Exec) {
     def buildDir = file('src/cpp/build')
     
     workingDir = cppDir
+
+    // Attempt to resolve the JDK path using the toolchain service
+    def javaHomePath = System.getProperty("java.home")
+    try {
+        def javaToolchains = project.extensions.getByType(JavaToolchainService)
+        def toolchain = javaToolchains.launcherFor(java.toolchain).get()
+        javaHomePath = toolchain.metadata.installationPath.asFile.absolutePath
+    } catch (Exception e) {
+        println "Warning: Could not resolve toolchain JDK path. Using system java.home: ${javaHomePath}"
+    }
+    
+    // Pass JAVA_HOME to the native build script
+    environment "JAVA_HOME", javaHomePath
     
     // Create build directory if it doesn't exist
     doFirst {
         buildDir.mkdirs()
+        println "Native build using JAVA_HOME: ${javaHomePath}"
     }
     
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
