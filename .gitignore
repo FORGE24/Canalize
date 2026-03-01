@@ -24,3 +24,11 @@ runs
 run-data
 docs
 repo
+
+*.dll
+*.so
+*.dylib
+*.log
+*.tmp
+*.bak
+*.swp
