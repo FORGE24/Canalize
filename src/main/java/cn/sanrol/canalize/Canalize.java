@@ -32,8 +32,16 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import cn.sanrol.canalize.world.NativeChunkGenerator;
+import cn.sanrol.canalize.world.NativeBiomeSource;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Canalize.MODID)
@@ -42,6 +50,10 @@ public class Canalize {
     public static final String MODID = "canalize";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
+    
+    // Config flags
+    public static boolean CHUNK_LOAD_LOG = false;
+
     // Create a Deferred Register to hold Blocks which will all be registered under the "canalize" namespace
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     // Create a Deferred Register to hold Items which will all be registered under the "canalize" namespace
@@ -50,8 +62,11 @@ public class Canalize {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     // Create a Deferred Register to hold ChunkGenerators
     public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> CHUNK_GENERATORS = DeferredRegister.create(Registries.CHUNK_GENERATOR, MODID);
+    // Create a Deferred Register to hold BiomeSources
+    public static final DeferredRegister<MapCodec<? extends BiomeSource>> BIOME_SOURCES = DeferredRegister.create(Registries.BIOME_SOURCE, MODID);
 
     public static final DeferredHolder<MapCodec<? extends ChunkGenerator>, MapCodec<NativeChunkGenerator>> NATIVE_CHUNK_GEN = CHUNK_GENERATORS.register("native_chunk_gen", () -> NativeChunkGenerator.CODEC);
+    public static final DeferredHolder<MapCodec<? extends BiomeSource>, MapCodec<NativeBiomeSource>> NATIVE_BIOME_SOURCE = BIOME_SOURCES.register("native_biome_source", () -> NativeBiomeSource.CODEC);
 
     // Creates a new Block with the id "canalize:example_block", combining the namespace and path
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
@@ -75,12 +90,7 @@ public class Canalize {
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public Canalize(IEventBus modEventBus, ModContainer modContainer) {
         // Load the native library
-        try {
-            System.loadLibrary("canalize_native");
-            initNative();
-        } catch (UnsatisfiedLinkError e) {
-            LOGGER.error("Failed to load native library 'canalize_native'. Ensure it is in java.library.path. Error: {}", e.getMessage());
-        }
+        loadNativeLibrary();
 
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
@@ -93,6 +103,8 @@ public class Canalize {
         CREATIVE_MODE_TABS.register(modEventBus);
         // Register the Deferred Register to the mod event bus so chunk generators get registered
         CHUNK_GENERATORS.register(modEventBus);
+        // Register the Deferred Register to the mod event bus so biome sources get registered
+        BIOME_SOURCES.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (Canalize) to respond directly to events.
@@ -104,6 +116,52 @@ public class Canalize {
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+    }
+
+    private void loadNativeLibrary() {
+        try {
+            // Try standard loading first (e.g. dev environment)
+            System.loadLibrary("canalize_native");
+            initNative();
+            LOGGER.info("Loaded native library 'canalize_native' from java.library.path");
+        } catch (UnsatisfiedLinkError e) {
+            LOGGER.warn("Could not load native library from java.library.path. Attempting to extract from jar...");
+            try {
+                // Fallback: Extract from JAR
+                // Note: The path inside the JAR depends on where build_native.bat put it.
+                // We put it in src/main/resources/natives/canalize_native.dll
+                String libName = "canalize_native.dll";
+                String resourcePath = "/natives/" + libName;
+                
+                InputStream is = getClass().getResourceAsStream(resourcePath);
+                if (is == null) {
+                    LOGGER.error("Native library not found in jar at: {}", resourcePath);
+                    throw new RuntimeException("Native library not found in jar: " + resourcePath);
+                }
+
+                File tempDir = new File(System.getProperty("java.io.tmpdir"), "canalize_natives");
+                if (!tempDir.exists()) tempDir.mkdirs();
+                File tempFile = new File(tempDir, libName);
+                
+                // Delete on exit, but we might want to cache it? 
+                // For now, overwrite it every time to ensure latest version.
+                try (OutputStream os = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = is.read(buffer)) != -1) {
+                        os.write(buffer, 0, bytesRead);
+                    }
+                }
+                
+                System.load(tempFile.getAbsolutePath());
+                initNative();
+                LOGGER.info("Loaded native library from extracted file: {}", tempFile.getAbsolutePath());
+                
+            } catch (Exception ex) {
+                LOGGER.error("Failed to extract and load native library!", ex);
+                throw new RuntimeException("Failed to load native library", ex);
+            }
+        }
     }
 
     // Native method declaration

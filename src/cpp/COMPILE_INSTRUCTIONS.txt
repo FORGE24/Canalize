@@ -1,4 +1,0 @@
-Compilation Instructions:
-1. Ensure MinGW (g++) is installed and in your PATH.
-2. Run `src/cpp/build_native.bat` manually.
-3. If g++ is missing, install TDM-GCC or MinGW-w64.

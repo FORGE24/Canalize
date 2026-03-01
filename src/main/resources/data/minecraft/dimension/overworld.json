@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:overworld",
+  "generator": {
+    "type": "canalize:native_chunk_gen",
+    "biome_source": {
+      "type": "canalize:native_biome_source",
+      "biomes": [
+        "minecraft:plains",
+        "minecraft:ocean",
+        "minecraft:jagged_peaks"
+      ]
+    }
+  }
+}

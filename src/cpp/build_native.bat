@@ -1,6 +1,22 @@
 @echo off
 setlocal enabledelayedexpansion
+cd /d "%~dp0"
 echo Compiling native library...
+
+:: Detect JAVA_HOME if not set
+if "%JAVA_HOME%"=="" (
+    echo JAVA_HOME not set. Attempting to detect...
+    for /f "tokens=2 delims==" %%I in ('java -XshowSettings:properties -version 2^>^&1 ^| findstr "java.home"') do (
+        set "JAVA_HOME=%%I"
+    )
+    :: Remove leading spaces
+    for /f "tokens=* delims= " %%I in ("!JAVA_HOME!") do set "JAVA_HOME=%%I"
+)
+if "%JAVA_HOME%"=="" (
+    echo Error: JAVA_HOME not set and could not be detected.
+    goto :fail
+)
+echo Detected JAVA_HOME: "!JAVA_HOME!"
 
 :: 1. Try to initialize MSVC environment using vswhere
 set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -23,7 +39,7 @@ if exist "!VSWHERE!" (
     )
 )
 
-:: 2. Check if cl.exe is already in PATH (e.g. running from Developer Command Prompt)
+:: 2. Check if cl.exe is already in PATH
 where cl >nul 2>nul
 if %errorlevel% equ 0 (
     echo Found cl.exe in PATH. Assuming environment is set.
@@ -50,11 +66,17 @@ goto :fail
 
 :compile_cl
 echo Using MSVC (cl.exe)...
+echo JAVA_HOME is: "%JAVA_HOME%"
+if not exist "%JAVA_HOME%\include\jni.h" (
+    echo ERROR: jni.h not found at "%JAVA_HOME%\include\jni.h"
+    goto :fail
+)
+
 if exist build rmdir /s /q build
 mkdir build
 cd build
-:: /LD = Create DLL, /Fe: = Output Name, /MD = Multithreaded DLL Runtime
-cl /nologo /LD /MD /Fe:canalize_native.dll /I"%JAVA_HOME%\include" /I"%JAVA_HOME%\include\win32" ..\jni.cpp
+:: /LD = Create DLL, /Fe: = Output Name, /MD = Multithreaded DLL Runtime, /O2 = Optimize, /arch:AVX2 = Enable AVX2, /EHsc = Enable C++ Exceptions
+cl /nologo /LD /MD /O2 /arch:AVX2 /EHsc /Fe:canalize_native.dll /I"%JAVA_HOME%\include" /I"%JAVA_HOME%\include\win32" ..\jni.cpp
 if %errorlevel% neq 0 (
     echo MSVC compilation failed with error level %errorlevel%
     goto :fail
@@ -67,7 +89,7 @@ echo Using MinGW (%GPP%)...
 if exist build rmdir /s /q build
 mkdir build
 cd build
-"%GPP%" -shared -o canalize_native.dll -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" ..\jni.cpp -static-libgcc -static-libstdc++ -Wl,--add-stdcall-alias
+"%GPP%" -shared -o canalize_native.dll -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" ..\jni.cpp ..\src\TerrainGen.cpp ..\src\Carver.cpp ..\src\Decorator.cpp ..\src\WorldLoader.cpp -static-libgcc -static-libstdc++ -Wl,--add-stdcall-alias -mavx2 -O3
 if %errorlevel% neq 0 (
     echo MinGW compilation failed with error level %errorlevel%
     goto :fail
@@ -76,14 +98,26 @@ echo Build successful with MinGW!
 goto :finish
 
 :finish
+echo Copying native library to resources...
+if not exist ..\..\..\src\main\resources\natives mkdir ..\..\..\src\main\resources\natives
+copy /Y canalize_native.dll ..\..\..\src\main\resources\natives\
 copy /Y canalize_native.dll ..\..\..\
 cd ..
 exit /b 0
 
 :fail
+echo Compilation FAILED.
+if exist ..\..\..\src\main\resources\natives\canalize_native.dll (
+    echo Found existing native library, keeping it.
+    cd ..
+    exit /b 0
+)
+
 echo Creating a DUMMY DLL to allow Gradle build to proceed.
 echo WARNING: Native features will NOT work in-game.
 echo. > canalize_native.dll
+if not exist ..\..\..\src\main\resources\natives mkdir ..\..\..\src\main\resources\natives
+copy /Y canalize_native.dll ..\..\..\src\main\resources\natives\
 copy /Y canalize_native.dll ..\..\..\
 cd ..
 exit /b 0
