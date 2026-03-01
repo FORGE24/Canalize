@@ -1,0 +1,13 @@
+{
+  "itemGroup.canalize": "Example Mod Tab",
+  "block.canalize.example_block": "Example Block",
+  "item.canalize.example_item": "Example Item",
+
+  "canalize.configuration.title": "Canalize Configs",
+  "canalize.configuration.section.canalize.common.toml": "Canalize Configs",
+  "canalize.configuration.section.canalize.common.toml.title": "Canalize Configs",
+  "canalize.configuration.items": "Item List",
+  "canalize.configuration.logDirtBlock": "Log Dirt Block",
+  "canalize.configuration.magicNumberIntroduction": "Magic Number Text",
+  "canalize.configuration.magicNumber": "Magic Number"
+}
