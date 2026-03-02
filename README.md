@@ -11,7 +11,7 @@
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-green)](https://www.minecraft.net/)
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1.219-orange)](https://neoforged.net/)
 [![Java](https://img.shields.io/badge/Java-21-blue)](https://www.oracle.com/java/)
-[![License](https://img.shields.io/badge/License-AGPL--3.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/License-MulanPubL--2.0-blue)](LICENSE)
 
 ---
 
@@ -167,9 +167,14 @@ EXAMPLE/
 
 ## 许可证
 
-本项目基于 [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE) 开源。
+本项目基于 [木兰公共许可证 第2版（MulanPubL-2.0）](LICENSE) 开源。
 
-简而言之：你可以自由使用、修改和分发本项目，但任何基于本项目的衍生作品（包括以网络服务形式提供）**必须**以同样的 AGPL-3.0 许可证开源。
+简而言之：你可以自由使用、修改和分发本项目，但任何衍生作品**必须**以同样的 MulanPubL-2.0 许可证开源并提供对应源代码。许可证以中英文双语表述，具有同等法律效力，中文版优先。
+
+> Copyright (c) 2026 NullSenpai  
+> Canalize is licensed under Mulan PubL v2.  
+> You can use this software according to the terms and conditions of the Mulan PubL v2.  
+> You may obtain a copy of Mulan PubL v2 at: http://license.coscl.org.cn/MulanPubL-2.0
 
 ---
 ---
@@ -183,7 +188,7 @@ EXAMPLE/
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-green)](https://www.minecraft.net/)
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1.219-orange)](https://neoforged.net/)
 [![Java](https://img.shields.io/badge/Java-21-blue)](https://www.oracle.com/java/)
-[![License](https://img.shields.io/badge/License-AGPL--3.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/License-MulanPubL--2.0-blue)](LICENSE)
 
 ---
 
@@ -326,6 +331,11 @@ EXAMPLE/
 
 ## License
 
-This project is open-sourced under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).
+This project is open-sourced under the [Mulan Public License, Version 2 (MulanPubL-2.0)](LICENSE).
 
-In short: you are free to use, modify, and distribute this project, but any derivative works (including those provided as a network service) **must** be open-sourced under the same AGPL-3.0 license.
+In short: you are free to use, modify, and distribute this project, but any derivative works **must** be open-sourced under the same MulanPubL-2.0 license and provide the corresponding source code. This license is written in both Chinese and English with equal legal effect; the Chinese version shall prevail in case of divergence.
+
+> Copyright (c) 2026 NullSenpai  
+> Canalize is licensed under Mulan PubL v2.  
+> You can use this software according to the terms and conditions of the Mulan PubL v2.  
+> You may obtain a copy of Mulan PubL v2 at: http://license.coscl.org.cn/MulanPubL-2.0
