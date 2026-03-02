@@ -76,7 +76,7 @@ if exist build rmdir /s /q build
 mkdir build
 cd build
 :: /LD = Create DLL, /Fe: = Output Name, /MD = Multithreaded DLL Runtime, /O2 = Optimize, /arch:AVX2 = Enable AVX2, /EHsc = Enable C++ Exceptions, /utf-8 = Source and execution charset UTF-8 (suppresses C4819)
-cl /nologo /LD /MD /O2 /arch:AVX2 /EHsc /utf-8 /Fe:canalize_native.dll /I"%JAVA_HOME%\include" /I"%JAVA_HOME%\include\win32" ..\jni.cpp ..\src\TerrainGen.cpp ..\src\Carver.cpp ..\src\Decorator.cpp ..\src\WorldLoader.cpp
+cl /nologo /LD /MD /O2 /arch:AVX2 /EHsc /utf-8 /Fe:canalize_native.dll /I"%JAVA_HOME%\include" /I"%JAVA_HOME%\include\win32" ..\jni.cpp ..\src\TerrainGen.cpp ..\src\Carver.cpp ..\src\Decorator.cpp ..\src\WorldLoader.cpp ..\src\NativeStatus.cpp ..\src\NativeLog.cpp
 if %errorlevel% neq 0 (
     echo MSVC compilation failed with error level %errorlevel%
     goto :fail
@@ -89,7 +89,7 @@ echo Using MinGW (%GPP%)...
 if exist build rmdir /s /q build
 mkdir build
 cd build
-"%GPP%" -shared -o canalize_native.dll -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" ..\jni.cpp ..\src\TerrainGen.cpp ..\src\Carver.cpp ..\src\Decorator.cpp ..\src\WorldLoader.cpp -static-libgcc -static-libstdc++ -Wl,--add-stdcall-alias -mavx2 -O3
+"%GPP%" -shared -o canalize_native.dll -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" ..\jni.cpp ..\src\TerrainGen.cpp ..\src\Carver.cpp ..\src\Decorator.cpp ..\src\WorldLoader.cpp ..\src\NativeStatus.cpp ..\src\NativeLog.cpp -static-libgcc -static-libstdc++ -Wl,--add-stdcall-alias -mavx2 -O3
 if %errorlevel% neq 0 (
     echo MinGW compilation failed with error level %errorlevel%
     goto :fail

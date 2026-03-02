@@ -38,6 +38,8 @@ add_library(canalize_native SHARED
     src/Carver.cpp
     src/Decorator.cpp
     src/WorldLoader.cpp
+    src/NativeStatus.cpp
+    src/NativeLog.cpp
 )
 
 # Output directory for the library
