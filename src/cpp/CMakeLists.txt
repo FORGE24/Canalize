@@ -13,7 +13,16 @@ endif()
 if(MSVC)
     add_compile_options(/O2 /arch:AVX2)
 else()
-    add_compile_options(-O3 -mavx2)
+    add_compile_options(-O3)
+    # Enable AVX2 only on x86_64; Apple Silicon (arm64) does not support it
+    if(NOT (APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64"))
+        add_compile_options(-mavx2)
+    endif()
+endif()
+
+# macOS: allow JNI symbols to resolve at runtime
+if(APPLE)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
 endif()
 
 # Find JNI

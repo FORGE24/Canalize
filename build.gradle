@@ -214,12 +214,14 @@ tasks.register('buildNative', Exec) {
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
         commandLine 'cmd', '/c', 'build_native.bat'
     } else {
-        // CMake outputs to build/libs/ via LIBRARY_OUTPUT_DIRECTORY.
-        // After make, copy the .so into src/main/resources/natives/ so processResources bundles it.
-        commandLine 'sh', '-c',
-            'mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && make && ' +
-            'mkdir -p ../../../src/main/resources/natives && ' +
-            'cp ../../../build/libs/libcanalize_native.so ../../../src/main/resources/natives/'
+        // Linux and macOS: delegate to build_native.sh which handles .so / .dylib and AVX2
+        doFirst {
+            exec {
+                commandLine 'chmod', '+x', 'build_native.sh'
+                workingDir = cppDir
+            }
+        }
+        commandLine 'bash', 'build_native.sh'
     }
 }
 
