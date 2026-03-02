@@ -214,8 +214,12 @@ tasks.register('buildNative', Exec) {
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
         commandLine 'cmd', '/c', 'build_native.bat'
     } else {
-        // Assume Linux/Mac with standard tools
-        commandLine 'sh', '-c', 'mkdir -p build && cd build && cmake .. && make && cp libcanalize_native.so ../../../'
+        // CMake outputs to build/libs/ via LIBRARY_OUTPUT_DIRECTORY.
+        // After make, copy the .so into src/main/resources/natives/ so processResources bundles it.
+        commandLine 'sh', '-c',
+            'mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && make && ' +
+            'mkdir -p ../../../src/main/resources/natives && ' +
+            'cp ../../../build/libs/libcanalize_native.so ../../../src/main/resources/natives/'
     }
 }
 

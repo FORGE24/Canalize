@@ -9,18 +9,29 @@ if(MSVC)
     add_compile_options(/utf-8)
 endif()
 
+# AVX2 + optimization flags
+if(MSVC)
+    add_compile_options(/O2 /arch:AVX2)
+else()
+    add_compile_options(-O3 -mavx2)
+endif()
+
 # Find JNI
 find_package(JNI REQUIRED)
 
 include_directories(${JNI_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Create shared library
 add_library(canalize_native SHARED
     jni.cpp
-    # Add other source files here
+    src/TerrainGen.cpp
+    src/Carver.cpp
+    src/Decorator.cpp
+    src/WorldLoader.cpp
 )
 
-# Output directory for the library (optional, can be adjusted)
+# Output directory for the library
 set_target_properties(canalize_native PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../../build/libs"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../../build/libs"
