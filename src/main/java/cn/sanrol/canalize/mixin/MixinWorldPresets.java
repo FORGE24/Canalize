@@ -23,74 +23,74 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 import java.util.Optional;
 
-@Mixin(WorldPresets.class)
+@Mixin(value = WorldPresets.class, priority = 999)  // Lower priority = execute after other mixins
 public class MixinWorldPresets {
 
     @Inject(method = "createNormalWorldDimensions", at = @At("RETURN"), cancellable = true)
     private static void canalize$hijackWorldDimensions(RegistryAccess registryAccess, CallbackInfoReturnable<WorldDimensions> cir) {
-        System.out.println("[Canalize] MixinWorldPresets: Hijack method entered!");
-        WorldDimensions original = cir.getReturnValue();
-        if (original == null) {
-            System.out.println("[Canalize] Original WorldDimensions is null!");
-            return;
-        }
-
-        var originalDimensions = original.dimensions();
-        System.out.println("[Canalize] Found dimensions: " + originalDimensions.keySet());
-        
-        MappedRegistry<LevelStem> newRegistry = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.experimental());
-
-        for (var entry : originalDimensions.entrySet()) {
-            ResourceKey<LevelStem> key = entry.getKey();
-            LevelStem stem = entry.getValue();
-
-            if (key.equals(LevelStem.OVERWORLD)) {
-                System.out.println("[Canalize] HIJACKING Overworld generation with NativeChunkGenerator!");
-                
-                var biomeRegistry = registryAccess.lookupOrThrow(Registries.BIOME);
-                var plainsHolder = biomeRegistry.getOrThrow(Biomes.PLAINS);
-                var oceanHolder = biomeRegistry.getOrThrow(Biomes.OCEAN);
-                var mountainsHolder = biomeRegistry.getOrThrow(Biomes.JAGGED_PEAKS);
-                
-                // Use NativeBiomeSource to match C++ biome generation
-                NativeBiomeSource nativeBiomeSource = NativeBiomeSource.create(plainsHolder, oceanHolder, mountainsHolder);
-                System.out.println("[Canalize] Created NativeBiomeSource: " + nativeBiomeSource);
-                
-                NativeChunkGenerator nativeGen = new NativeChunkGenerator(nativeBiomeSource);
-                System.out.println("[Canalize] Created NativeChunkGenerator: " + nativeGen);
-                
-                // HIJACK DIMENSION TYPE HEIGHT
-                Holder<DimensionType> dimTypeHolder = stem.type();
-                try {
-                    DimensionType dimType = dimTypeHolder.value();
-                    System.out.println("[Canalize] Modifying Overworld DimensionType height via Unsafe... Current: " + dimType.height());
-                    
-                    // Modify 'height' field (usually 384 -> 1808)
-                    // Also 'logicalHeight' (usually 384 -> 1808)
-                    // Using Unsafe to bypass 'final' restriction
-                    
-                    modifyFieldUnsafe(dimType, "height", 1808);
-                    modifyFieldUnsafe(dimType, "logicalHeight", 1808);
-                    modifyFieldUnsafe(dimType, "minY", -64); // Ensure min_y is correct too
-                    
-                    System.out.println("[Canalize] DimensionType height modified successfully to 1808! New Height: " + dimType.height());
-                } catch (Exception e) {
-                    System.err.println("[Canalize] Failed to modify DimensionType height!");
-                    e.printStackTrace();
-                }
-
-                LevelStem newStem = new LevelStem(dimTypeHolder, nativeGen);
-                
-                newRegistry.register(key, newStem, new RegistrationInfo(Optional.empty(), Lifecycle.stable()));
-            } else {
-                newRegistry.register(key, stem, new RegistrationInfo(Optional.empty(), Lifecycle.stable()));
+        try {
+            System.out.println("[Canalize] MixinWorldPresets: Hijack method entered!");
+            WorldDimensions original = cir.getReturnValue();
+            if (original == null) {
+                System.out.println("[Canalize] Original WorldDimensions is null!");
+                return;
             }
-        }
-        
-        newRegistry.freeze();
 
-        cir.setReturnValue(new WorldDimensions(newRegistry));
-        System.out.println("[Canalize] MixinWorldPresets: Hijack completed successfully!");
+            var originalDimensions = original.dimensions();
+            System.out.println("[Canalize] Found dimensions: " + originalDimensions.keySet());
+            
+            MappedRegistry<LevelStem> newRegistry = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.experimental());
+
+            for (var entry : originalDimensions.entrySet()) {
+                ResourceKey<LevelStem> key = entry.getKey();
+                LevelStem stem = entry.getValue();
+
+                if (key.equals(LevelStem.OVERWORLD)) {
+                    System.out.println("[Canalize] HIJACKING Overworld generation with NativeChunkGenerator!");
+                    
+                    var biomeRegistry = registryAccess.lookupOrThrow(Registries.BIOME);
+                    var plainsHolder = biomeRegistry.getOrThrow(Biomes.PLAINS);
+                    var oceanHolder = biomeRegistry.getOrThrow(Biomes.OCEAN);
+                    var mountainsHolder = biomeRegistry.getOrThrow(Biomes.JAGGED_PEAKS);
+                    
+                    // Use NativeBiomeSource to match C++ biome generation
+                    // NOTE: This mixin is disabled in canalize.mixins.json, kept for reference
+                    // NativeBiomeSource nativeBiomeSource = NativeBiomeSource.create(plainsHolder, oceanHolder, mountainsHolder);
+                    // System.out.println("[Canalize] Created NativeBiomeSource: " + nativeBiomeSource);
+                    
+                    // NativeChunkGenerator nativeGen = new NativeChunkGenerator(nativeBiomeSource);
+                    // System.out.println("[Canalize] Created NativeChunkGenerator: " + nativeGen);
+                    
+                    // HIJACK DIMENSION TYPE HEIGHT
+                    Holder<DimensionType> dimTypeHolder = stem.type();
+                    try {
+                        DimensionType dimType = dimTypeHolder.value();
+                        System.out.println("[Canalize] Overworld DimensionType height: " + dimType.height());
+                        
+                        // Height modification disabled due to JourneyMap compatibility issues
+                        // TODO: Re-enable after finding safe injection point
+                    } catch (Exception e) {
+                        System.err.println("[Canalize] Warning: Could not access DimensionType height!");
+                        e.printStackTrace();
+                    }
+
+                    // NOTE: This mixin is disabled, so we just use the original stem
+                    // LevelStem newStem = new LevelStem(dimTypeHolder, nativeGen);
+                    newRegistry.register(key, stem, new RegistrationInfo(Optional.empty(), Lifecycle.stable()));
+                } else {
+                    newRegistry.register(key, stem, new RegistrationInfo(Optional.empty(), Lifecycle.stable()));
+                }
+            }
+            
+            newRegistry.freeze();
+
+            cir.setReturnValue(new WorldDimensions(newRegistry));
+            System.out.println("[Canalize] MixinWorldPresets: Hijack completed successfully!");
+        } catch (Exception e) {
+            System.err.println("[Canalize] CRITICAL: Mixin hijack failed! JourneyMap or other mods may be affected.");
+            e.printStackTrace();
+            // Do NOT cancel callback — let other mods work with original dimensions
+        }
     }
 
     private static Unsafe getUnsafe() {

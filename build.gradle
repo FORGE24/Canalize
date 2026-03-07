@@ -95,7 +95,8 @@ neoForge {
         // these are used to tell the game which sources are for which mod
         // multi mod projects should define one per mod
         "${mod_id}" {
-            sourceSet(sourceSets.main)
+            // For development, only load the built JAR, not the classes directory
+            // sourceSet(sourceSets.main)  // DISABLED: causes "classes/java/main is not a valid mod file" error
         }
     }
 }

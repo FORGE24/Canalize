@@ -60,6 +60,17 @@ public class Canalize {
         // Load the native library
         loadNativeLibrary();
 
+        LOGGER.info("================================================================");
+        LOGGER.info("[Canalize] Custom terrain generation registered!");
+        LOGGER.info("[Canalize] HOW TO USE:");
+        LOGGER.info("[Canalize] 1. Create a new world");
+        LOGGER.info("[Canalize] 2. In 'World Type/Terrain' selection, find and select");
+        LOGGER.info("[Canalize]    the custom preset (if available)");
+        LOGGER.info("[Canalize] 3. Ensure native library AVX2 support is available");
+        LOGGER.info("================================================================");
+        LOGGER.warn("[Canalize] If you see JourneyMap NPE errors, see JOURNEYMAP_FIX.md");
+        LOGGER.warn("[Canalize] This is JourneyMap 6.0.0-beta.53 bug, not Canalize bug.");
+
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 

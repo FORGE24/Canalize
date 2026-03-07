@@ -56,8 +56,8 @@ fi
 SOURCES="jni.cpp src/TerrainGen.cpp src/Carver.cpp src/Decorator.cpp src/WorldLoader.cpp"
 INCLUDES="-I\"$JAVA_HOME/include\" -I\"$JAVA_HOME/include/$JNI_PLATFORM\" -Iinclude"
 
-OUTDIR="../../build/libs"
-NATIVES_DIR="../../src/main/resources/natives"
+OUTDIR="../../../build/libs"
+NATIVES_DIR="../../../src/main/resources/natives"
 
 mkdir -p "$OUTDIR"
 mkdir -p "$NATIVES_DIR"

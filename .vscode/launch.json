@@ -16,7 +16,7 @@
       ],
       "vmArgs": [
         "@F:\\Canalize\\build\\moddev\\clientRunVmArgs.txt",
-        "-Dfml.modFolders\u003dcanalize%%F:\\Canalize\\bin\\main"
+        "-Dfml.modFolders\u003d"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},
@@ -38,7 +38,7 @@
       ],
       "vmArgs": [
         "@F:\\Canalize\\build\\moddev\\dataRunVmArgs.txt",
-        "-Dfml.modFolders\u003dcanalize%%F:\\Canalize\\bin\\main"
+        "-Dfml.modFolders\u003d"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},
@@ -60,7 +60,7 @@
       ],
       "vmArgs": [
         "@F:\\Canalize\\build\\moddev\\gameTestServerRunVmArgs.txt",
-        "-Dfml.modFolders\u003dcanalize%%F:\\Canalize\\bin\\main"
+        "-Dfml.modFolders\u003d"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},
@@ -82,7 +82,7 @@
       ],
       "vmArgs": [
         "@F:\\Canalize\\build\\moddev\\serverRunVmArgs.txt",
-        "-Dfml.modFolders\u003dcanalize%%F:\\Canalize\\bin\\main"
+        "-Dfml.modFolders\u003d"
       ],
       "cwd": "${workspaceFolder}\\run",
       "env": {},

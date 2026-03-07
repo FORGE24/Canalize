@@ -13,7 +13,7 @@ namespace NativeStatus {
     // -----------------------------------------------------------------------
     // Build-time version string reported to the /canalize status command.
     // -----------------------------------------------------------------------
-    constexpr const char* LIB_VERSION = "1.0.0-avx2";
+    constexpr const char* LIB_VERSION = "Build2.Mozita.alpha";
 
     // -----------------------------------------------------------------------
     // Counters (updated by WorldLoader::generate_chunk every call)

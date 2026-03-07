@@ -73,7 +73,14 @@ if exist ..\..\..\src\main\resources\natives\plugins.list del ..\..\..\src\main\
 :: From here (src/cpp/build), that is ..\..\..\build\libs\canalize_plugins
 set "PLUGIN_DIR=..\..\..\build\libs\canalize_plugins"
 
-if exist "!PLUGIN_DIR!" (
+if exist "!PLUGIN_DIR!\Release" (
+    echo Found Release directory for plugins...
+    for %%f in ("!PLUGIN_DIR!\Release\*.dll") do (
+        echo Copying plugin: %%~nxf
+        copy /Y "%%f" ..\..\..\src\main\resources\natives\plugins\
+        echo %%~nxf >> ..\..\..\src\main\resources\natives\plugins.list
+    )
+) else if exist "!PLUGIN_DIR!" (
     for %%f in ("!PLUGIN_DIR!\*.dll") do (
         echo Copying plugin: %%~nxf
         copy /Y "%%f" ..\..\..\src\main\resources\natives\plugins\

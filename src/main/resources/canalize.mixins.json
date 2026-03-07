@@ -2,11 +2,9 @@
   "required": true,
   "package": "cn.sanrol.canalize.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "MixinMinecraftServer",
-    "MixinWorldPresets"
-  ],
+  "mixins": [],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "_comment": "All Mixins disabled: MixinWorldPresets (JourneyMap NPE), MixinMinecraftServer (unused), MixinMinecraftJourneyMapFix (insufficient). Will use safer FML events instead."
 }
