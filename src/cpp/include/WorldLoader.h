@@ -1,8 +1,9 @@
 #pragma once
 #include <jni.h>
 #include <string>
+#include "CanalizeAPI.h"
 
-class WorldLoader {
+class CANALIZE_API WorldLoader {
 public:
     // Initialize native components (called from JNI_OnLoad or specific init method)
     static void init();

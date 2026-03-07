@@ -1,12 +1,13 @@
 #pragma once
 #include "MathUtil.h"
+#include "CanalizeAPI.h"
 
-struct TerrainResult { 
+struct CANALIZE_API TerrainResult { 
     int height; 
     int biomeId; 
 };
 
-class TerrainGen {
+class CANALIZE_API TerrainGen {
 public:
     static const int CHUNK_WIDTH  = 16;
     static const int CHUNK_HEIGHT = 1808;

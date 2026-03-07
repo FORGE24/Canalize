@@ -15,13 +15,18 @@ static jstring toJString(JNIEnv* env, const std::string& s) {
     return env->NewStringUTF(s.c_str());
 }
 
+#include "include/canalize/api/JNIHelper.h"
+
 extern "C" {
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved){ 
+    Canalize::JNIHelper::init(vm); // Initialize Helper
     WorldLoader::init();
     return JNI_VERSION_1_8; 
 }
-JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved){}
+JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved){
+    Canalize::JNIHelper::detach();
+}
 
 JNIEXPORT void JNICALL Java_cn_sanrol_canalize_Canalize_initNative(
         JNIEnv* env, jclass clazz){ perform_hijack(); load_model_block(); }

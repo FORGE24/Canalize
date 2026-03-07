@@ -40,10 +40,64 @@ add_library(canalize_native SHARED
     src/WorldLoader.cpp
     src/NativeStatus.cpp
     src/NativeLog.cpp
+    src/PluginSystem.cpp
+    src/PluginLoader.cpp
+    src/JNIHelper.cpp
+    src/BlockState.cpp
+    src/ChunkAccess.cpp
+    src/EventBus.cpp
 )
+
+target_compile_definitions(canalize_native PRIVATE CANALIZE_EXPORTS)
 
 # Output directory for the library
 set_target_properties(canalize_native PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../../build/libs"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../../build/libs"
 )
+
+# Install Configuration
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# Install Targets
+install(TARGETS canalize_native
+    EXPORT CanalizeTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# Install Headers
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/canalize
+    FILES_MATCHING PATTERN "*.h"
+)
+
+# Generate Config Files
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/CanalizeSDKConfigVersion.cmake"
+    VERSION 1.0.0
+    COMPATIBILITY AnyNewerVersion
+)
+
+configure_file(CanalizeSDKConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/CanalizeSDKConfig.cmake"
+    @ONLY
+)
+
+# Install Config Files
+install(EXPORT CanalizeTargets
+    FILE CanalizeSDKTargets.cmake
+    NAMESPACE Canalize::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CanalizeSDK
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/CanalizeSDKConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/CanalizeSDKConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CanalizeSDK
+)
+
+# Add Plugins to the build
+add_subdirectory(../../sdk/plugins/TerrainOverhaul bin/TerrainOverhaul)

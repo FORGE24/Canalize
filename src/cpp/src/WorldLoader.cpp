@@ -1,9 +1,11 @@
-#include "../include/WorldLoader.h"
-#include "../include/TerrainGen.h"
-#include "../include/Carver.h"
-#include "../include/Decorator.h"
-#include "../include/NativeStatus.h"
-#include "../include/NativeLog.h"
+#include "WorldLoader.h"
+#include "TerrainGen.h"
+#include "Carver.h"
+#include "Decorator.h"
+#include "NativeStatus.h"
+#include "NativeLog.h"
+#include "PluginSystem.h"
+#include "PluginLoader.h"
 #include <iostream>
 #include <chrono>
 #include <sstream>
@@ -24,6 +26,9 @@ void WorldLoader::init() {
     NativeStatus::reset();
     NativeLog::clear();
     NativeLog::info("WorldLoader init OK — NativeStatus reset.");
+    
+    // Load plugins
+    PluginLoader::loadPlugins("canalize_plugins");
 }
 
 void WorldLoader::generate_chunk(int chunkX, int chunkZ, int* buffer) {
@@ -35,14 +40,22 @@ void WorldLoader::generate_chunk(int chunkX, int chunkZ, int* buffer) {
         NativeLog::debug(buf);
     }
 
-    // 1. Base Terrain
-    TerrainGen::generate_base_chunk(chunkX, chunkZ, buffer);
+    // 1. Pre-Generation Hook
+    bool handled = Canalize::PluginManager::getInstance().dispatchPreGenerate(chunkX, chunkZ, buffer);
 
-    // 2. Carvers (Caves)
-    Carver::carve_chunk(chunkX, chunkZ, buffer);
+    if (!handled) {
+        // 2. Base Terrain (Default)
+        TerrainGen::generate_base_chunk(chunkX, chunkZ, buffer);
 
-    // 3. Decoration (Ores, Trees)
-    Decorator::decorate_chunk(chunkX, chunkZ, buffer);
+        // 3. Carvers (Caves)
+        Carver::carve_chunk(chunkX, chunkZ, buffer);
+
+        // 4. Decoration (Ores, Trees)
+        Decorator::decorate_chunk(chunkX, chunkZ, buffer);
+    }
+
+    // 5. Post-Generation Hook
+    Canalize::PluginManager::getInstance().dispatchPostGenerate(chunkX, chunkZ, buffer);
 
     auto t1 = std::chrono::high_resolution_clock::now();
     int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count();
