@@ -19,11 +19,16 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import cn.sanrol.canalize.world.NativeChunkGenerator;
 import cn.sanrol.canalize.world.NativeBiomeSource;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Canalize.MODID)
@@ -49,6 +54,9 @@ public class Canalize {
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public Canalize(IEventBus modEventBus, ModContainer modContainer) {
+        // Setup plugins (extract from JAR to canalize_plugins folder)
+        setupPlugins();
+
         // Load the native library
         loadNativeLibrary();
 
@@ -62,6 +70,66 @@ public class Canalize {
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+    }
+
+    private void setupPlugins() {
+        try {
+            // 1. Create canalize_plugins directory in game root
+            File pluginDir = new File("canalize_plugins");
+            if (!pluginDir.exists()) {
+                if (!pluginDir.mkdirs()) {
+                    LOGGER.error("Failed to create plugin directory: " + pluginDir.getAbsolutePath());
+                    return;
+                }
+            }
+
+            // 2. Read plugins.list
+            String listPath = "/natives/plugins.list";
+            InputStream listStream = getClass().getResourceAsStream(listPath);
+            if (listStream == null) {
+                LOGGER.info("No built-in plugins list found at " + listPath);
+                return;
+            }
+
+            List<String> plugins = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(listStream, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (!line.isEmpty()) {
+                        plugins.add(line);
+                    }
+                }
+            }
+
+            // 3. Extract each plugin
+            for (String pluginName : plugins) {
+                String resourcePath = "/natives/plugins/" + pluginName;
+                File targetFile = new File(pluginDir, pluginName);
+                
+                // For now, always overwrite to ensure version match
+                try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
+                    if (is == null) {
+                        LOGGER.warn("Plugin listed in plugins.list but not found in JAR: " + resourcePath);
+                        continue;
+                    }
+                    
+                    try (OutputStream os = new FileOutputStream(targetFile)) {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, bytesRead);
+                        }
+                    }
+                    LOGGER.info("Extracted built-in plugin: " + pluginName);
+                } catch (IOException e) {
+                    LOGGER.error("Failed to extract plugin: " + pluginName, e);
+                }
+            }
+            
+        } catch (Exception e) {
+            LOGGER.error("Error setting up plugins", e);
+        }
     }
 
     private void loadNativeLibrary() {

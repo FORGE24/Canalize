@@ -63,6 +63,26 @@ if exist ..\..\..\build\libs\Release\canalize_native.dll (
 if not exist ..\..\..\src\main\resources\natives mkdir ..\..\..\src\main\resources\natives
 copy /Y "!DLL_PATH!" ..\..\..\src\main\resources\natives\
 copy /Y "!DLL_PATH!" ..\..\..\
+
+:: Handle Plugins
+echo Copying plugins...
+if not exist ..\..\..\src\main\resources\natives\plugins mkdir ..\..\..\src\main\resources\natives\plugins
+if exist ..\..\..\src\main\resources\natives\plugins.list del ..\..\..\src\main\resources\natives\plugins.list
+
+:: The plugins are output to build/libs/canalize_plugins relative to project root
+:: From here (src/cpp/build), that is ..\..\..\build\libs\canalize_plugins
+set "PLUGIN_DIR=..\..\..\build\libs\canalize_plugins"
+
+if exist "!PLUGIN_DIR!" (
+    for %%f in ("!PLUGIN_DIR!\*.dll") do (
+        echo Copying plugin: %%~nxf
+        copy /Y "%%f" ..\..\..\src\main\resources\natives\plugins\
+        echo %%~nxf >> ..\..\..\src\main\resources\natives\plugins.list
+    )
+) else (
+    echo Warning: Plugin directory not found at !PLUGIN_DIR!
+)
+
 cd ..
 exit /b 0
 
