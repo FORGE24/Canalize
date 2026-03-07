@@ -46,6 +46,14 @@ add_library(canalize_native SHARED
     src/BlockState.cpp
     src/ChunkAccess.cpp
     src/EventBus.cpp
+    src/ItemStack.cpp
+    src/Items.cpp
+    src/Entity.cpp
+    src/EntityType.cpp
+    src/Config.cpp
+    src/GUI.cpp
+    src/Network.cpp
+    src/Render.cpp
 )
 
 target_compile_definitions(canalize_native PRIVATE CANALIZE_EXPORTS)
