@@ -28,7 +28,7 @@ void WorldLoader::init() {
     NativeLog::info("WorldLoader init OK — NativeStatus reset.");
     
     // Load plugins
-    PluginLoader::loadPlugins("canalize_plugins");
+    Canalize::PluginLoader::loadPlugins("canalize_plugins");
 }
 
 void WorldLoader::generate_chunk(int chunkX, int chunkZ, int* buffer) {

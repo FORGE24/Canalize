@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 cd /d "%~dp0"
-echo Compiling native library...
+echo Compiling native library using CMake...
 
 :: Detect JAVA_HOME if not set
 if "%JAVA_HOME%"=="" (
@@ -18,106 +18,55 @@ if "%JAVA_HOME%"=="" (
 )
 echo Detected JAVA_HOME: "!JAVA_HOME!"
 
-:: 1. Try to initialize MSVC environment using vswhere
-set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
-if exist "!VSWHERE!" (
-    for /f "usebackq tokens=*" %%i in (`"!VSWHERE!" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
-        set "VS_PATH=%%i"
-    )
-    if defined VS_PATH (
-        if exist "!VS_PATH!\VC\Auxiliary\Build\vcvarsall.bat" (
-            echo Found Visual Studio at: !VS_PATH!
-            echo Initializing MSVC environment...
-            call "!VS_PATH!\VC\Auxiliary\Build\vcvarsall.bat" x64 >nul
-            if !errorlevel! equ 0 (
-                echo MSVC environment initialized.
-                goto :compile_cl
-            ) else (
-                echo Failed to initialize MSVC environment.
-            )
-        )
-    )
-)
+:: Sanitize JAVA_HOME for CMake (replace backslashes with forward slashes to avoid escape issues)
+set "JAVA_HOME_CMAKE=!JAVA_HOME:\=/!"
 
-:: 2. Check if cl.exe is already in PATH
-where cl >nul 2>nul
-if %errorlevel% equ 0 (
-    echo Found cl.exe in PATH. Assuming environment is set.
-    goto :compile_cl
-)
-
-:: 3. Check for MinGW at specific path
-if exist "F:\MinGW\bin\g++.exe" (
-    set "GPP=F:\MinGW\bin\g++.exe"
-    echo Found MinGW at F:\MinGW\bin\g++.exe
-    goto :compile_gpp
-)
-
-:: 4. Check for g++ in PATH
-where g++ >nul 2>nul
-if %errorlevel% equ 0 (
-    set "GPP=g++"
-    echo Found g++ in PATH
-    goto :compile_gpp
-)
-
-echo Error: No suitable C++ compiler found (cl.exe or g++).
-goto :fail
-
-:compile_cl
-echo Using MSVC (cl.exe)...
-echo JAVA_HOME is: "%JAVA_HOME%"
-if not exist "%JAVA_HOME%\include\jni.h" (
-    echo ERROR: jni.h not found at "%JAVA_HOME%\include\jni.h"
-    goto :fail
-)
-
+:: Clean previous build
 if exist build rmdir /s /q build
 mkdir build
 cd build
-:: /LD = Create DLL, /Fe: = Output Name, /MD = Multithreaded DLL Runtime, /O2 = Optimize, /arch:AVX2 = Enable AVX2, /EHsc = Enable C++ Exceptions, /utf-8 = Source and execution charset UTF-8 (suppresses C4819)
-cl /nologo /LD /MD /O2 /arch:AVX2 /EHsc /utf-8 /Fe:canalize_native.dll /I"%JAVA_HOME%\include" /I"%JAVA_HOME%\include\win32" ..\jni.cpp ..\src\TerrainGen.cpp ..\src\Carver.cpp ..\src\Decorator.cpp ..\src\WorldLoader.cpp ..\src\NativeStatus.cpp ..\src\NativeLog.cpp
-if %errorlevel% neq 0 (
-    echo MSVC compilation failed with error level %errorlevel%
-    goto :fail
-)
-echo Build successful with MSVC!
-goto :finish
 
-:compile_gpp
-echo Using MinGW (%GPP%)...
-if exist build rmdir /s /q build
-mkdir build
-cd build
-"%GPP%" -shared -o canalize_native.dll -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" ..\jni.cpp ..\src\TerrainGen.cpp ..\src\Carver.cpp ..\src\Decorator.cpp ..\src\WorldLoader.cpp ..\src\NativeStatus.cpp ..\src\NativeLog.cpp -static-libgcc -static-libstdc++ -Wl,--add-stdcall-alias -mavx2 -O3
+:: Configure with CMake
+:: We pass JAVA_HOME to help FindJNI
+cmake .. -DJAVA_HOME="!JAVA_HOME_CMAKE!"
 if %errorlevel% neq 0 (
-    echo MinGW compilation failed with error level %errorlevel%
+    echo CMake configuration failed.
     goto :fail
 )
-echo Build successful with MinGW!
+
+:: Build
+cmake --build . --config Release
+if %errorlevel% neq 0 (
+    echo CMake build failed.
+    goto :fail
+)
+
+:: Copy output
+echo Build successful!
 goto :finish
 
 :finish
 echo Copying native library to resources...
+if exist ..\..\..\build\libs\Release\canalize_native.dll (
+    set "DLL_PATH=..\..\..\build\libs\Release\canalize_native.dll"
+) else if exist ..\..\..\build\libs\canalize_native.dll (
+    set "DLL_PATH=..\..\..\build\libs\canalize_native.dll"
+) else if exist Release\canalize_native.dll (
+    set "DLL_PATH=Release\canalize_native.dll"
+) else if exist canalize_native.dll (
+    set "DLL_PATH=canalize_native.dll"
+) else (
+    echo Error: canalize_native.dll not found.
+    goto :fail
+)
+
 if not exist ..\..\..\src\main\resources\natives mkdir ..\..\..\src\main\resources\natives
-copy /Y canalize_native.dll ..\..\..\src\main\resources\natives\
-copy /Y canalize_native.dll ..\..\..\
+copy /Y "!DLL_PATH!" ..\..\..\src\main\resources\natives\
+copy /Y "!DLL_PATH!" ..\..\..\
 cd ..
 exit /b 0
 
 :fail
 echo Compilation FAILED.
-if exist ..\..\..\src\main\resources\natives\canalize_native.dll (
-    echo Found existing native library, keeping it.
-    cd ..
-    exit /b 0
-)
-
-echo Creating a DUMMY DLL to allow Gradle build to proceed.
-echo WARNING: Native features will NOT work in-game.
-echo. > canalize_native.dll
-if not exist ..\..\..\src\main\resources\natives mkdir ..\..\..\src\main\resources\natives
-copy /Y canalize_native.dll ..\..\..\src\main\resources\natives\
-copy /Y canalize_native.dll ..\..\..\
 cd ..
-exit /b 0
+exit /b 1

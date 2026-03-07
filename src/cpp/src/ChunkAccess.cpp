@@ -1,5 +1,5 @@
 #include "canalize/world/ChunkAccess.h"
-#include "canalize/block/Blocks.h"
+#include "canalize/block/BlockState.h"
 #include "TerrainGen.h" // For constants
 
 namespace Canalize {

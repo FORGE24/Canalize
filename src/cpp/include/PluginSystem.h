@@ -4,6 +4,12 @@
 #include <memory>
 #include <string>
 
+// Disable MSVC warning C4251 for STL containers in DLL-exported classes
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4251)
+#endif
+
 namespace Canalize {
 
     class CANALIZE_API IPlugin {
@@ -40,3 +46,8 @@ namespace Canalize {
         std::vector<std::shared_ptr<IPlugin>> plugins;
     };
 }
+
+// Re-enable warnings
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

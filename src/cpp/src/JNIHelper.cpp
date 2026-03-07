@@ -4,7 +4,7 @@
 namespace Canalize {
 
     JavaVM* JNIHelper::s_vm = nullptr;
-    thread_local JNIEnv* JNIHelper::s_env = nullptr;
+    static thread_local JNIEnv* g_env = nullptr;
 
     void JNIHelper::init(JavaVM* vm) {
         s_vm = vm;

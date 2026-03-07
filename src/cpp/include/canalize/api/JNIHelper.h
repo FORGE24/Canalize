@@ -22,8 +22,7 @@ namespace Canalize {
 
     private:
         static JavaVM* s_vm;
-        static thread_local JNIEnv* s_env; 
-        // Note: s_env caches only for attached threads, but usually we just get from VM
+        // static thread_local JNIEnv* s_env; // Moved to cpp file scope to avoid dll export issues
     };
 
 }

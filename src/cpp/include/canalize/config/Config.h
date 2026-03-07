@@ -4,6 +4,12 @@
 #include <variant>
 #include "../../CanalizeAPI.h"
 
+// Disable MSVC warning C4251 for STL containers in DLL-exported classes
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4251)
+#endif
+
 namespace Canalize {
     namespace Config {
 
@@ -36,3 +42,8 @@ namespace Canalize {
         };
     }
 }
+
+// Re-enable warnings
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

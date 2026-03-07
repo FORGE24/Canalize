@@ -28,8 +28,8 @@ public:
         
         // Very basic pseudo-noise for demonstration purposes
         // Real implementation would use lookups and gradient vectors
-        return (sin(x * 12.9898 + mSeed) * 43758.5453 
-              + cos(y * 78.233 + z * 32.1) * 21321.2) - floor((sin(x) + cos(y))*10000);
+        return static_cast<float>((sin(x * 12.9898 + mSeed) * 43758.5453 
+              + cos(y * 78.233 + z * 32.1) * 21321.2) - floor((sin(x) + cos(y))*10000));
     }
     
     // Fractal Brownian Motion

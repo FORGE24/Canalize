@@ -43,7 +43,8 @@ public:
         ChunkAccess chunkAccess(chunkX, chunkZ, buffer);
         
         // Fire the event manually to simulate the framework
-        ChunkGeneratorEvent event(&chunkAccess, chunkX, chunkZ, buffer);
+        // Fix: Explicitly qualify types to avoid ambiguity or lookup issues
+        Canalize::Forge::ChunkGeneratorEvent event(&chunkAccess, chunkX, chunkZ, buffer);
         EventBus::getInstance().post(event);
         
         return event.isCanceled(); // If canceled, it means "handled"

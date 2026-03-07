@@ -10,7 +10,7 @@
 // NeoForge-like APIs
 #include "canalize/api/JNIHelper.h"
 #include "canalize/block/BlockState.h"
-#include "canalize/block/Blocks.h"
+// #include "canalize/block/Blocks.h" // Removed as it is part of BlockState.h or doesn't exist as separate file
 #include "canalize/world/ChunkAccess.h"
 #include "canalize/world/BlockPos.h"
 #include "canalize/forge/EventBus.h"

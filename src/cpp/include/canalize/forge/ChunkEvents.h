@@ -8,16 +8,16 @@ namespace Canalize {
         // Event fired when a chunk is about to be generated
         class ChunkGeneratorEvent : public Event {
         public:
-            ChunkGeneratorEvent(ChunkAccess* chunk, int x, int z, int* buffer) 
+            ChunkGeneratorEvent(Canalize::World::ChunkAccess* chunk, int x, int z, int* buffer) 
                 : chunk(chunk), chunkX(x), chunkZ(z), buffer(buffer) {}
             
-            ChunkAccess* getChunk() const { return chunk; }
+            Canalize::World::ChunkAccess* getChunk() const { return chunk; }
             int getChunkX() const { return chunkX; }
             int getChunkZ() const { return chunkZ; }
             int* getBuffer() { return buffer; }
 
         private:
-            ChunkAccess* chunk;
+            Canalize::World::ChunkAccess* chunk;
             int chunkX;
             int chunkZ;
             int* buffer;
